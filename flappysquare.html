@@ -17,14 +17,19 @@
       const canvas = document.getElementById("gameCanvas");
       const ctx = canvas.getContext("2d");
 
-      // gravity azaltıldı (0.3), lift aynı
-      let square = { x: 50, y: 150, size: 40, gravity: 0.3, lift: -10, velocity: 0 };
+      // gravity 0.1 → çok yavaş düşüş
+      let square = { x: 50, y: 150, size: 40, gravity: 0.1, lift: -8, velocity: 0 };
       let pipes = [];
       let score = 0;
 
-      // Klavye ve dokunmatik kontrol
-      document.addEventListener("keydown", () => { square.velocity = square.lift; });
+      // Klavye kontrolü (↑ tuşu)
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowUp") square.velocity = square.lift;
+      });
+
+      // Dokunmatik ve mouse kontrolü
       document.addEventListener("touchstart", () => { square.velocity = square.lift; });
+      document.addEventListener("mousedown", () => { square.velocity = square.lift; });
 
       function drawSquare() {
         ctx.fillStyle = "yellow";
@@ -99,8 +104,3 @@
     </script>
   </body>
 </html>
-
-
-
-      
-
