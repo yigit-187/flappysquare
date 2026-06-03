@@ -1,1 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>FlappySquare</title>
+    <style>
+      canvas {
+        background: #87CEEB; /* gökyüzü */
+        display: block;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="gameCanvas" width="400" height="600"></canvas>
+    <script>
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d");
 
+      let square = { x: 50, y: 150, size: 40, gravity: 0.6, lift: -10, velocity: 0 };
+      let pipes = [];
+      let score = 0;
+
+      document.addEventListener("keydown", () => { square.velocity = square.lift; });
+      document.addEventListener("touchstart", () => { square.velocity = square.lift; });
+
+      function drawSquare() {
+        ctx.fillStyle = "yellow";
+        ctx.fillRect(square.x, square.y, square.size, square.size);
+      }
+
+      function drawPipes() {
+        for (let i = 0; i < pipes.length; i++) {
+          let p = pipes[i];
+          ctx.fillStyle = "lightgreen";
+          ctx.fillRect(p.x, 0, p.width, p.top);
+          ctx.fillRect(p.x, p.bottom, p.width, canvas.height - p.bottom);
+          p.x -= 2;
+
+          if (p.x + p.width < 0) {
+            pipes.splice(i, 1);
+            score++;
+          }
+        }
+      }
+
+      function addPipe() {
+        let gap = 150;
+        let top = Math.random() * (canvas.height - gap - 100) + 50;
+        pipes.push({ x: canvas.width, width: 60, top: top, bottom: top + gap });
+      }
+
+      function update() {
+        square.velocity += square.gravity;
+        square.y += square.velocity;
+
+        if (square.y + square.size > canvas.height) {
+          square.y = canvas.height - square.size;
+          square.velocity = 0;
+        }
+      }
+
+      function drawScore() {
+        ctx.fillStyle = "black";
+        ctx.font = "24px Arial";
+        ctx.fillText("Score: " + score, 10, 30);
+      }
+
+      let frame = 0;
+      function gameLoop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawSquare();
+        drawPipes();
+        update();
+        drawScore();
+
+        frame++;
+        if (frame % 100 === 0) addPipe();
+
+        requestAnimationFrame(gameLoop);
+      }
+
+      gameLoop();
+    </script>
+  </body>
+</html>
+    
