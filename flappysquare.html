@@ -74,6 +74,19 @@
         update();
         drawScore();
 
+        // Çarpışma kontrolü
+        for (let i = 0; i < pipes.length; i++) {
+          let p = pipes[i];
+          if (
+            square.x < p.x + p.width &&
+            square.x + square.size > p.x &&
+            (square.y < p.top || square.y + square.size > p.bottom)
+          ) {
+            alert("Game Over! Skor: " + score);
+            document.location.reload();
+          }
+        }
+
         frame++;
         if (frame % 100 === 0) addPipe();
 
@@ -84,4 +97,5 @@
     </script>
   </body>
 </html>
-    
+
+
