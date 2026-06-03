@@ -1,109 +1,110 @@
+
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <title>FlappySquare</title>
-  <style>
-    canvas { background:#87CEEB; display:block; margin:auto; }
-    #playBtn {
-      display:block;
-      margin:20px auto;
-      padding:10px 20px;
-      font-size:20px;
-      background:limegreen;
-      color:white;
-      border:none;
-      border-radius:8px;
-      cursor:pointer;
-    }
-  </style>
-</head>
-<body>
-<button id="playBtn">▶ Başlat</button>
-<canvas id="gameCanvas" width="400" height="500"></canvas>
-<script>
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
+  <head>
+    <meta charset="UTF-8">
+    <title>FlappySquare</title>
+    <style>
+      canvas {
+        background: #87CEEB;
+        display: block;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="gameCanvas" width="400" height="600"></canvas>
+    <script>
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d");
 
-let flappySquare = {x:50, y:200, w:40, h:40};
-let pipes = [];
-let score = 0;
-let running = false;
+      let square = { x: 50, y: 150, size: 40, gravity: 0.6, lift: -10, velocity: 0 };
+      let pipes = [];
+      let score = 0;
 
-function drawFlappySquare(){
-  ctx.fillStyle = "yellow";
-  ctx.fillRect(flappySquare.x, flappySquare.y, flappySquare.w, flappySquare.h);
-}
+      // Klavye ve dokunmatik kontrol
+      document.addEventListener("keydown", () => { square.velocity = square.lift; });
+      document.addEventListener("touchstart", () => { square.velocity = square.lift; });
 
-function drawPipes(){
-  ctx.fillStyle = "lightgreen";
-  pipes.forEach(p=>{
-    ctx.fillRect(p.x, 0, p.w, p.top);
-    ctx.fillRect(p.x, p.top+p.gap, p.w, canvas.height-(p.top+p.gap));
-  });
-}
+      function drawSquare() {
+        ctx.fillStyle = "yellow";
+        ctx.fillRect(square.x, square.y, square.size, square.size);
+      }
 
-function update(){
-  pipes.forEach(p=>{
-    p.x -= 2;
-    if(p.x+p.w < 0){
-      p.x = canvas.width;
-      p.top = Math.random()*200+30;
-      p.gap = 170;
-    }
-    if(flappySquare.x < p.x+p.w && flappySquare.x+flappySquare.w > p.x &&
-       (flappySquare.y < p.top || flappySquare.y+flappySquare.h > p.top+p.gap)){
-      alert("Kaybettin! Skor: " + score);
-      document.location.reload();
-    }
-  });
-}
+      function drawPipes() {
+        for (let i = 0; i < pipes.length; i++) {
+          let p = pipes[i];
+          ctx.fillStyle = "lightgreen";
+          ctx.fillRect(p.x, 0, p.width, p.top);
+          ctx.fillRect(p.x, p.bottom, p.width, canvas.height - p.bottom);
+          p.x -= 2;
 
-function gameLoop(){
-  if(!running) return;
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  update();
-  drawFlappySquare();
-  drawPipes();
-  ctx.fillStyle = "black";
-  ctx.font = "16px Arial";
-  ctx.fillText("Skor: " + score, 10, 20);
-  requestAnimationFrame(gameLoop);
-}
+          if (p.x + p.width < 0) {
+            pipes.splice(i, 1);
+            score++;
+          }
+        }
+      }
 
-function init(){
-  pipes.push({x:300, w:50, top:80, gap:170});
-  pipes.push({x:500, w:50, top:100, gap:170});
-  running = true;
-  gameLoop();
-}
+      function addPipe() {
+        let gap = 150;
+        let top = Math.random() * (canvas.height - gap - 100) + 50;
+        pipes.push({ x: canvas.width, width: 60, top: top, bottom: top + gap });
+      }
 
-// 🎮 Klavye kontrolleri
-document.addEventListener("keydown", e=>{
-  if(e.code === "ArrowUp"){ flappySquare.y -= 20; score++; }
-  if(e.code === "ArrowDown"){ flappySquare.y += 20; score++; }
-  if(e.code === "ArrowLeft"){ flappySquare.x -= 20; score++; }
-  if(e.code === "ArrowRight"){ flappySquare.x += 20; score++; }
-});
+      function update() {
+        square.velocity += square.gravity;
+        square.y += square.velocity;
 
-// 📱 Dokunmatik kontroller
-document.addEventListener("touchstart", (e)=>{
-  let touchY = e.touches[0].clientY;
-  if(touchY < window.innerHeight/2){
-    flappySquare.y -= 30; // üst yarıya dokununca yukarı
-  } else {
-    flappySquare.y += 30; // alt yarıya dokununca aşağı
-  }
-  score++;
-});
+        if (square.y + square.size > canvas.height) {
+          square.y = canvas.height - square.size;
+          square.velocity = 0;
+        }
+      }
 
-document.getElementById("playBtn").addEventListener("click", ()=>{
-  document.getElementById("playBtn").style.display = "none";
-  init();
-});
-</script>
-</body>
+      function drawScore() {
+        ctx.fillStyle = "black";
+        ctx.font = "24px Arial";
+        ctx.fillText("Score: " + score, 10, 30);
+      }
+
+      let frame = 0;
+      function gameLoop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawSquare();
+        drawPipes();
+        update();
+        drawScore();
+
+        // Çarpışma kontrolü
+        for (let i = 0; i < pipes.length; i++) {
+          let p = pipes[i];
+          if (
+            square.x < p.x + p.width &&
+            square.x + square.size > p.x &&
+            (square.y < p.top || square.y + square.size > p.bottom)
+          ) {
+            alert("Game Over! Skor: " + score);
+            document.location.reload();
+          }
+        }
+
+        frame++;
+        if (frame % 100 === 0) addPipe();
+
+        requestAnimationFrame(gameLoop);
+      }
+
+      gameLoop();
+    </script>
+  </body>
 </html>
+
+
+
+
+
+
 
 
 
