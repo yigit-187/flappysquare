@@ -17,7 +17,7 @@
       const canvas = document.getElementById("gameCanvas");
       const ctx = canvas.getContext("2d");
 
-      // gravity 0.1 → çok yavaş düşüş
+      // gravity 0.1 → yavaş düşüş
       let square = { x: 50, y: 150, size: 40, gravity: 0.1, lift: -8, velocity: 0 };
       let pipes = [];
       let score = 0;
@@ -52,7 +52,7 @@
       }
 
       function addPipe() {
-        let gap = 150;
+        let gap = 140; // boşluk bir tık kısaltıldı
         let top = Math.random() * (canvas.height - gap - 100) + 50;
         pipes.push({ x: canvas.width, width: 60, top: top, bottom: top + gap });
       }
@@ -104,4 +104,3 @@
     </script>
   </body>
 </html>
-
